@@ -1,0 +1,9 @@
+./node_modules
+./dist
+./build
+
+# Environment variables
+.env
+
+# Configuration files
+config.js
