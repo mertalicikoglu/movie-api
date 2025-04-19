@@ -3,7 +3,7 @@
 import { Director } from '../../domain/entities/director.entity';
 import { IDirectorRepository } from '../../domain/repositories/director.repository.interface';
 import { IMovieRepository } from '../../domain/repositories/movie.repository.interface'; // For checking movies when deleting a director
-//import { NotFoundError, ConflictError } from '../errors'; // Error classes
+import { NotFoundError, ConflictError } from '../errors'; // Error classes
 
 export class DirectorService {
    constructor(
@@ -21,8 +21,7 @@ export class DirectorService {
        // Business Rule: Check if director to delete exists
        const existingDirector = await this.directorRepository.findById(id);
         if (!existingDirector) {
-           return false; // Controller can return 404
-           // Or throw new NotFoundError(`Director with ID ${id} not found.`);
+           throw new NotFoundError(`Director with ID ${id} not found.`);
         }
 
         // Business Rule: Check if there are movies associated with this director. If yes, don't allow deletion.
@@ -31,10 +30,8 @@ export class DirectorService {
         const relatedMovies = moviesByDirector.filter(movie => movie.directorId === id);
 
         if (relatedMovies.length > 0) {
-             // TODO: Throw our custom error class
-             // throw new ConflictError(`Cannot delete director with ID ${id} because ${relatedMovies.length} movies are associated with them.`);
-             // For now, let's throw a simple Error:
-            throw new Error(`Cannot delete director with ID ${id} because ${relatedMovies.length} movies are associated with them.`);
+             // Throw our custom error class
+             throw new ConflictError(`Cannot delete director with ID ${id} because ${relatedMovies.length} movies are associated with them.`);
         }
 
        const success = await this.directorRepository.delete(id);
