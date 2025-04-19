@@ -1,26 +1,22 @@
-// src/infrastructure/models/movie.model.ts
+// src/infrastructure/models/director.model.ts
 
 import mongoose, { Schema, Document } from 'mongoose';
-import { Movie } from '../../domain/entities/movie.entity'; // Import the domain entity
+import { Director } from '../../domain/entities/director.entity'; // Import the domain entity
 
-// Additional properties for Mongoose Document (e.g. _id, __v)
-export interface MovieDocument extends Omit<Movie, 'id'>, Document {
-  // Additional fields added by Mongoose can go here
+// Additional properties for Mongoose Document
+export interface DirectorDocument extends Omit<Director, 'id'>, Document {
+  // Fields added by Mongoose
 }
 
-const MovieSchema: Schema<MovieDocument> = new Schema({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  releaseDate: { type: Date, required: true },
-  genre: { type: String, required: true },
-  rating: { type: Number, required: false }, // Optional
-  imdbId: { type: String, required: false, unique: true, sparse: true }, // Optional, unique
-  // Director relationship: ObjectId type referencing the 'Director' model
-  directorId: { type: Schema.Types.ObjectId, ref: 'Director', required: false } // What happens to the movie when director is deleted depends on business rules (null, cascade)
+const DirectorSchema: Schema<DirectorDocument> = new Schema({
+  firstName: { type: String, required: true },
+  secondName: { type: String, required: true },
+  birthDate: { type: Date, required: false }, // Optional
+  bio: { type: String, required: false } // Optional
 });
 
 // Map the id field from domain entity to MongoDB's _id field
-MovieSchema.methods.toJSON = function() {
+DirectorSchema.methods.toJSON = function() {
   const obj = this.toObject();
   obj.id = obj._id;
   delete obj._id;
@@ -28,7 +24,6 @@ MovieSchema.methods.toJSON = function() {
   return obj;
 };
 
+const DirectorModel = mongoose.model<DirectorDocument>('Director', DirectorSchema);
 
-const MovieModel = mongoose.model<MovieDocument>('Movie', MovieSchema);
-
-export default MovieModel;
+export default DirectorModel;
