@@ -5,6 +5,11 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import config from './infrastructure/config'; // Configuration settings
 import connectDB from './infrastructure/db/connection'; // Database connection function
+// Import routes
+import movieRoutes from './api/routes/movie.routes'; //
+import directorRoutes from './api/routes/director.routes';
+// We will create and import error handling middleware later
+// import errorHandler from './api/middlewares/errorHandler';
 
 
 
@@ -19,10 +24,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(express.static('uploads'));
 
-//create a route for the server
-app.get('/', (req: Request, res: Response) => {
-    res.send('Hello World');
-});
+
+// Use routes
+app.use('/api/movies', movieRoutes); // Requests starting with /api/movies will be handled by movieRoutes
+app.use('/api/directors', directorRoutes); // Requests starting with /api/directors will be handled by directorRoutes
+
+
+
+// --- Error handling middleware will be added here (after routes) ---
+// app.use(errorHandler);
+
 
 // Async function to start the server
 const startServer = async () => {
@@ -34,6 +45,7 @@ const startServer = async () => {
       app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
         console.log(`Access URL: http://localhost:${PORT}`);
+        console.log(`API Docs (TODO): http://localhost:${PORT}/api-docs`); // Swagger/Postman Collection URL
       });
   
     } catch (error) {
