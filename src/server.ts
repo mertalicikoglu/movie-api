@@ -6,10 +6,9 @@ import bodyParser from 'body-parser';
 import config from './infrastructure/config'; // Configuration settings
 import connectDB from './infrastructure/db/connection'; // Database connection function
 // Import routes
-import movieRoutes from './api/routes/movie.routes'; //
-import directorRoutes from './api/routes/director.routes';
-// We will create and import error handling middleware later
-// import errorHandler from './api/middlewares/errorHandler';
+import movieRoutes from './api/routes/movie.routes'; // Movie routes
+import directorRoutes from './api/routes/director.routes'; // Director routes
+import errorHandler from './api/middlewares/errorHandler'; // Error handling middleware
 
 
 
@@ -30,9 +29,8 @@ app.use('/api/movies', movieRoutes); // Requests starting with /api/movies will 
 app.use('/api/directors', directorRoutes); // Requests starting with /api/directors will be handled by directorRoutes
 
 
-
-// --- Error handling middleware will be added here (after routes) ---
-// app.use(errorHandler);
+// Error handling middleware must be defined after all routes
+app.use(errorHandler);
 
 
 // Async function to start the server
