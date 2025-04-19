@@ -12,9 +12,9 @@ const errorHandler = (
   next: NextFunction // If another error handler exists, pass it to it, typically not called in the last error handler
 ): void => {
 
-  // Hatanın türünü kontrol et
+  // Check the type of the error
   if (err instanceof CustomError) {
-    // Eğer hata bizim tanımladığımız özel hata sınıflarından biriyse
+    // If error is one of our custom error classes
     console.error(`[ERROR] Custom Error: ${err.name} - ${err.message} (Status: ${err.statusCode})`, err.stack);
     res.status(err.statusCode).json({
       message: err.message,
