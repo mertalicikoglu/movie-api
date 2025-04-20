@@ -4,10 +4,12 @@
 module.exports = {
     preset: 'ts-jest', // Use ts-jest to process TypeScript files
     testEnvironment: 'node', // Use Node.js as test environment
-    testMatch: [ // Specify location of test files
-      "**/__tests__/**/*.test.(ts|js)"
-    ],
-    moduleFileExtensions: ["ts", "js", "json", "node"],
-    rootDir: '.', // Project root directory
-    // Other configuration options can be added (coverage, reporters etc.)
-  };
+    roots: ['<rootDir>/src', '<rootDir>/__tests__'],
+    setupFilesAfterEnv: ['./jest.setup.js'],
+    testMatch: ['**/__tests__/**/*.test.ts'],
+    testPathIgnorePatterns: ['/node_modules/'],
+    collectCoverage: true,
+    collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts'],
+    moduleFileExtensions: ['ts', 'js', 'json', 'node'],
+    testTimeout: 10000
+};
