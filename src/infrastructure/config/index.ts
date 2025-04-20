@@ -10,7 +10,12 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 // Read environment variables and export them as an object for the application to use
 const config = {
   databaseUrl: process.env.DATABASE_URL || 'mongodb://localhost:27017/movie-director-db', // You can add default values
-  port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000 // Convert port to number
+  port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000, // Convert port to number
+  redis: {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT, 10) : 6379,
+    password: process.env.REDIS_PASSWORD || undefined
+  }
 };
 
 // Check if required variables are loaded
