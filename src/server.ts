@@ -87,6 +87,15 @@ const swaggerDefinition = {
         },
         required: ['firstName', 'secondName']
        },
+       UpdateDirectorDto: {
+        type: 'object',
+        properties: {
+          firstName: { type: 'string', example: 'Christopher' },
+          secondName: { type: 'string', example: 'Nolan' },
+          birthDate: { type: 'string', format: 'date', example: '1970-07-30' },
+          bio: { type: 'string', example: 'Known for mind-bending films.' }
+        }
+       },
        Director: { // Director object representation for API responses
          type: 'object',
          properties: {
