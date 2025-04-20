@@ -52,5 +52,30 @@ export const deleteDirector = async (req: Request, res: Response, next: NextFunc
     }
 };
 
+export const getAllDirectors = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const directors = await directorService.getAllDirectors();
+        res.status(200).json(directors);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const updateDirector = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const directorId = req.params.id;
+        const updateData = req.body;
+
+        const updatedDirector = await directorService.updateDirector(directorId, updateData);
+        if (!updatedDirector) {
+            throw new NotFoundError(`Director with ID ${directorId} not found.`);
+        }
+
+        res.status(200).json(updatedDirector);
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Get director (single or all) and update operations are not included in this controller as they were not requested.
 // Can be added if requirements change.
