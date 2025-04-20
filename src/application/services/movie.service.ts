@@ -2,8 +2,9 @@
 
 import { Movie } from '../../domain/entities/movie.entity';
 import { IMovieRepository } from '../../domain/repositories/movie.repository.interface';
+import { IDirectorRepository } from '../../domain/repositories/director.repository.interface';
+import { ICacheService } from '../../domain/repositories/cache.interface';
 import { Director } from '../../domain/entities/director.entity'; // We might need Director entity (for relationship checks)
-import { IDirectorRepository } from '../../domain/repositories/director.repository.interface'; // We might need Director repository
 
 // Import error classes
 import { NotFoundError, ValidationError } from '../errors'; // Not created yet, will create soon
@@ -11,10 +12,17 @@ import { NotFoundError, ValidationError } from '../errors'; // Not created yet, 
 export class MovieService {
     // Dependency injection of repositories in constructor
     // This ensures our service is not tied to a specific repository implementation (e.g. not just Mongoose, could be another DB)
+    private readonly CACHE_TTL = 3600; // 1 hour in seconds
     constructor(
         private movieRepository: IMovieRepository,
-        private directorRepository: IDirectorRepository // For director validation
+        private directorRepository: IDirectorRepository, // For director validation
+        private cacheService: ICacheService
     ) { }
+
+
+    private getCacheKey(id: string): string {
+        return `movie:${id}`;
+    }
 
     async createMovie(movieData: Movie): Promise<Movie> {
         // Business Rule: If director ID is provided when creating a movie, check if that director exists
@@ -26,23 +34,34 @@ export class MovieService {
             }
         }
 
-        // TODO: More detailed data validation can be done here or in the controller
 
         const newMovie = await this.movieRepository.create(movieData);
+        await this.cacheService.delByPattern('movie:*');
         return newMovie;
     }
 
     async getAllMovies(): Promise<Movie[]> {
+        const cachedMovies = await this.cacheService.get<Movie[]>('movies:all');
+        if (cachedMovies) {
+            return cachedMovies;
+        }
         const movies = await this.movieRepository.findAll();
+        await this.cacheService.set('movies:all', movies, this.CACHE_TTL);
         return movies;
     }
 
     async getMovieById(id: string): Promise<Movie | null> {
+        const cacheKey = this.getCacheKey(id);
+        const cachedMovie = await this.cacheService.get<Movie>(cacheKey);
+        if (cachedMovie) {
+            return cachedMovie;
+        }
         const movie = await this.movieRepository.findById(id);
         // Business Rule: Throw special error if movie is not found
         if (!movie) {
             throw new NotFoundError(`Movie with ID ${id} not found.`);
         }
+        await this.cacheService.set(cacheKey, movie, this.CACHE_TTL);
         return movie; // We can return null so controller can return 404
     }
 
@@ -62,7 +81,11 @@ export class MovieService {
             }
         }
 
+        const cacheKey = this.getCacheKey(id);
+        await this.cacheService.del(cacheKey);
+
         const updatedMovie = await this.movieRepository.update(id, updateData);
+        await this.cacheService.delByPattern('movie:*');
         return updatedMovie;
     }
 
@@ -73,7 +96,12 @@ export class MovieService {
             // Throw our custom error class
             throw new NotFoundError(`Movie with ID ${id} not found.`);
         }
+
+        const cacheKey = this.getCacheKey(id);
+        await this.cacheService.del(cacheKey);
+
         const success = await this.movieRepository.delete(id);
+        await this.cacheService.delByPattern('movie:*');
         return success; // Returns true if deletion was successful
     }
 }
