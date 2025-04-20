@@ -26,6 +26,24 @@ export class DirectorRepository implements IDirectorRepository {
      return toDirectorEntity(director); // Convert document to entity
   }
 
+  async findAll(): Promise<Director[]> {
+    const directors = await DirectorModel.find().exec();
+    return directors.map(toDirectorEntity);
+  }
+
+  async update(id: string, director: Partial<Director>): Promise<Director | null> {
+    const updatedDirector = await DirectorModel.findByIdAndUpdate(
+      id,
+      director,
+      { new: true }
+    ).exec();
+    
+    if (!updatedDirector) {
+      return null;
+    }
+    
+    return toDirectorEntity(updatedDirector);
+  }
 
   async delete(id: string): Promise<boolean> {
     // What happens to movies when a director is deleted?
