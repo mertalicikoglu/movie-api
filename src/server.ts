@@ -169,7 +169,7 @@ const startServer = async () => {
       app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
         console.log(`Access URL: http://localhost:${PORT}`);
-        console.log(`API Docs (TODO): http://localhost:${PORT}/api-docs`); // Swagger UI will be available at /api-docs
+        console.log(`API Docs: http://localhost:${PORT}/api-docs`); // Swagger UI will be available at /api-docs
       });
   
     } catch (error) {
