@@ -56,7 +56,6 @@ export const getAllDirectors = async (req: Request, res: Response, next: NextFun
         const directors = await directorService.getAllDirectors();
         res.status(200).json(directors);
     } catch (error) {
-        console.error('DirectorController: Error getting all directors:', error);
         next(error);
     }
 };

@@ -80,7 +80,6 @@ export class DirectorService {
             await this.cacheService.set(cacheKey, directors, this.CACHE_TTL);
             return directors;
         } catch (error) {
-            console.error('DirectorService: Error getting all directors:', error);
             throw error;
         }
     }

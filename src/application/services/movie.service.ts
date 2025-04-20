@@ -72,7 +72,6 @@ export class MovieService {
             await this.cacheService.set(cacheKey, movies, this.CACHE_TTL);
             return movies;
         } catch (error) {
-            console.error('MovieService: Error getting all movies:', error);
             throw error;
         }
     }
@@ -94,7 +93,6 @@ export class MovieService {
             await this.cacheService.set(cacheKey, movie, this.CACHE_TTL);
             return movie;
         } catch (error) {
-            console.error(`MovieService: Error getting movie with ID: ${id}`, error);
             throw error;
         }
     }
