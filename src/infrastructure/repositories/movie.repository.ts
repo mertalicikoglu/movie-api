@@ -33,12 +33,24 @@ export class MovieRepository implements IMovieRepository {
   }
 
   async findById(id: string): Promise<Movie | null> {
-    // You can add populate('directorId') here
     const movie = await MovieModel.findById(id).exec();
     if (!movie) {
       return null;
     }
     return toMovieEntity(movie); // Convert document to entity
+  }
+
+  async findByDirectorId(directorId: string): Promise<Movie[]> {
+    const movies = await MovieModel.find({ directorId }).exec();
+    return movies.map(toMovieEntity);
+  }
+
+  async findByImdbId(imdbId: string): Promise<Movie | null> {
+    const movie = await MovieModel.findOne({ imdbId }).exec();
+    if (!movie) {
+      return null;
+    }
+    return toMovieEntity(movie);
   }
 
   async update(id: string, movie: Partial<Movie>): Promise<Movie | null> {
