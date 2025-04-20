@@ -25,6 +25,7 @@ This project is a RESTful API developed for managing movie and director informat
 * Comments and Documentation (In-code and API)
 * Database Management (MongoDB / Mongoose)
 * Input Validation
+* Coding unit tests of endpoints
 
 ## Architecture
 
@@ -45,6 +46,7 @@ The project follows Clean Architecture principles to separate responsibilities a
 * **Containerization:** Docker
 * **Input Validation:** Zod
 * **Error Handling:** Custom Error Classes and Central Middleware
+* **Testing:** Jest, ts-jest, Mocking
 * **Version Control:** Git
 
 ## Setup
@@ -169,3 +171,18 @@ The API uses a central error handling middleware to convert custom errors thrown
 ## Input Validation
 
 Request bodies (POST/PUT) coming to the API are validated according to schemas defined using the Zod library. If validation fails, the client receives a 400 Bad Request status code and a response containing error details.
+
+## Testing
+
+To ensure the quality and reliability of the API, automated tests have been implemented.
+
+Unit tests are specifically written for the **API controllers** to verify that they correctly process incoming requests, interact with the application layer (services), and format the outgoing HTTP responses.
+
+* **Framework:** Jest is used as the test runner.
+* **TypeScript Support:** `ts-jest` allows running tests written in TypeScript.
+* **Isolation:** Mocking is utilized to isolate the controllers from their dependencies, ensuring that only the controller's logic is tested in isolation.
+
+You can run the unit tests using the following command in the project root directory:
+
+```bash
+npm test
