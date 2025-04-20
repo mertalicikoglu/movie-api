@@ -53,6 +53,11 @@ COPY .env.example ./.env.example
 # Should match PORT variable in config/index.ts
 EXPOSE 3000
 
+# Set default Redis environment variables (can be overridden when running container)
+ENV REDIS_HOST=redis
+ENV REDIS_PORT=6379
+# ENV REDIS_PASSWORD=your_password_here (uncomment and set if using password)
+
 # Command to run the application
 # Make sure start script in package.json is something like "node dist/server.js"
 CMD ["npm", "start"]
