@@ -38,6 +38,20 @@ export class DirectorService {
        return success; // Returns true if deletion was successful
    }
 
+   async getAllDirectors(): Promise<Director[]> {
+       return await this.directorRepository.findAll();
+   }
+
+   async updateDirector(id: string, updateData: Partial<Director>): Promise<Director | null> {
+       const existingDirector = await this.directorRepository.findById(id);
+       if (!existingDirector) {
+           return null;
+       }
+
+       const updatedDirector = await this.directorRepository.update(id, updateData);
+       return updatedDirector;
+   }
+
     // Get director (single or all) or update operations were not requested, so not added to this service.
     // Can be added if requirements change. findById was added above for relationship checks.
 }

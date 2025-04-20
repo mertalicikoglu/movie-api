@@ -3,10 +3,12 @@
 import { Router } from 'express';
 import {
     createDirector,
-    deleteDirector
+    deleteDirector,
+    getAllDirectors,
+    updateDirector
 } from '../controllers/director.controller'; // Import controller functions
 import { validate } from '../middlewares/validateRequest'; // Import validate middleware
-import { createDirectorSchema } from '../../application/dtos/director.dto'; // Import schema
+import { createDirectorSchema, updateDirectorSchema } from '../../application/dtos/director.dto'; // Import schema
 
 const router = Router();
 
@@ -14,64 +16,106 @@ const router = Router();
 
 /**
  * @swagger
- * /directors:
- * post:
- * summary: Create new director
- * tags: [Directors]
- * requestBody:
- * required: true
- * content:
- * application/json:
- * schema:
- * $ref: '#/components/schemas/CreateDirectorDto' # Reference to schema in server.ts
- * responses:
- * 201:
- * description: Director created successfully
- * content:
- * application/json:
- * schema:
- * $ref: '#/components/schemas/Director' # Schema of created director object
- * 400:
- * description: Invalid input (Validation error)
- * 500:
- * description: Server error
+ * /api/directors:
+ *   post:
+ *     summary: Create a new director
+ *     tags: [Directors]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateDirectorDto'
+ *     responses:
+ *       201:
+ *         description: Director created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Director'
+ *       400:
+ *         description: Invalid input
+ *       500:
+ *         description: Server error
  */
-router.post('/', validate(createDirectorSchema), createDirector); // POST /api/directors -> Execute createDirector function
+router.post('/', validate(createDirectorSchema), createDirector);
 
 /**
  * @swagger
- * /directors/{id}:
- * delete:
- * summary: Delete a specific director
- * tags: [Directors]
- * parameters:
- * - in: path
- * name: id
- * schema:
- * type: string
- * required: true
- * description: Director ID (in ObjectId string format)
- * example: 60f5e8a7d4b5e7c8a9b0c1d2
- * responses:
- * 200:
- * description: Director deleted successfully
- * content:
- * application/json:
- * schema:
- * type: object
- * properties:
- * message:
- * type: string
- * example: Director deleted successfully
- * 400:
- * description: Invalid ID format
- * 404:
- * description: Director not found
- * 409:
- * description: Director has associated movies (Cannot be deleted due to business rule)
- * 500:
- * description: Server error
+ * /api/directors:
+ *   get:
+ *     summary: Get all directors
+ *     tags: [Directors]
+ *     responses:
+ *       200:
+ *         description: List of directors
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Director'
+ *       500:
+ *         description: Server error
  */
-router.delete('/:id', deleteDirector); // DELETE /api/directors/:id -> Execute deleteDirector function
+router.get('/', getAllDirectors);
+
+/**
+ * @swagger
+ * /api/directors/{id}:
+ *   put:
+ *     summary: Update a director
+ *     tags: [Directors]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Director ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateDirectorDto'
+ *     responses:
+ *       200:
+ *         description: Director updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Director'
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: Director not found
+ *       500:
+ *         description: Server error
+ */
+router.put('/:id', validate(updateDirectorSchema), updateDirector);
+
+/**
+ * @swagger
+ * /api/directors/{id}:
+ *   delete:
+ *     summary: Delete a director
+ *     tags: [Directors]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Director ID
+ *     responses:
+ *       200:
+ *         description: Director deleted successfully
+ *       404:
+ *         description: Director not found
+ *       500:
+ *         description: Server error
+ */
+router.delete('/:id', deleteDirector);
 
 export default router;
