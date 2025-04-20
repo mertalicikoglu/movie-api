@@ -24,20 +24,76 @@ export class MovieRepository implements IMovieRepository {
   }
 
   async findAll(): Promise<Movie[]> {
-    // We could use populate('directorId') to get director information with movies
-    // Since requirements only mention "Director" field, it's not clear if we should get the whole related object
-    // or just keep the ID. For now, we just store the ID reference in the model.
-    // You can add .populate('directorId') here to get the director object if needed.
-    const movies = await MovieModel.find().exec();
-    return movies.map(toMovieEntity); // Convert document array to entity array
+    try {
+      // Populate director information when fetching movies
+      const movies = await MovieModel.find()
+        .populate('directorId', 'firstName secondName birthDate bio')
+        .exec();
+      
+      
+      // Convert to domain entities with director information
+      return movies.map(movie => {
+        const movieObj = movie.toJSON();
+        if (movieObj.directorId) {
+          // Extract director information
+          const director = movieObj.directorId as any; // Type assertion for populated document
+          const directorId = director._id?.toString();
+          
+          // Add director object
+          (movieObj as Movie).director = {
+            id: directorId,
+            firstName: director.firstName,
+            secondName: director.secondName,
+            birthDate: director.birthDate,
+            bio: director.bio
+          };
+          
+          // Remove directorId
+          delete movieObj.directorId;
+        }
+        return movieObj as Movie;
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findById(id: string): Promise<Movie | null> {
-    const movie = await MovieModel.findById(id).exec();
-    if (!movie) {
-      return null;
+    try {
+      // Populate director information when fetching a single movie
+      const movie = await MovieModel.findById(id)
+        .populate('directorId', 'firstName secondName birthDate bio')
+        .exec();
+      
+      if (!movie) {
+        return null;
+      }
+      
+      
+      // Convert to domain entity with director information
+      const movieObj = movie.toJSON();
+      if (movieObj.directorId) {
+        // Extract director information
+        const director = movieObj.directorId as any;
+        const directorId = director._id?.toString();
+        
+        // Add director object
+        (movieObj as Movie).director = {
+          id: directorId,
+          firstName: director.firstName,
+          secondName: director.secondName,
+          birthDate: director.birthDate,
+          bio: director.bio
+        };
+        
+        // Remove directorId
+        delete movieObj.directorId;
+      }
+      
+      return movieObj as Movie;
+    } catch (error) {
+      throw error;
     }
-    return toMovieEntity(movie); // Convert document to entity
   }
 
   async findByDirectorId(directorId: string): Promise<Movie[]> {
