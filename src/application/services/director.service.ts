@@ -22,7 +22,14 @@ export class DirectorService {
 
     async createDirector(directorData: Director): Promise<Director> {
         const newDirector = await this.directorRepository.create(directorData);
-        await this.cacheService.delByPattern('director:*'); // Cache invalidation
+        
+        // Invalidate the directors:all cache
+        await this.cacheService.del('directors:all');
+        
+        // Update the cache with fresh data from database
+        const allDirectors = await this.directorRepository.findAll();
+        await this.cacheService.set('directors:all', allDirectors, this.CACHE_TTL);
+        
         return newDirector;
     }
 
@@ -44,23 +51,38 @@ export class DirectorService {
             throw new ConflictError(`Cannot delete director with ID ${id} because ${relatedMovies.length} movies are associated with them.`);
         }
 
-        await this.cacheService.delByPattern('director:*'); // Cache invalidation for all director related keys
-
         const success = await this.directorRepository.delete(id);
+        
+        // If successful, update the cache with fresh data
+        if (success) {
+            // Invalidate all director related caches
+            await this.cacheService.del('directors:all');
+            
+            // Update the cache with fresh data from database
+            const allDirectors = await this.directorRepository.findAll();
+            await this.cacheService.set('directors:all', allDirectors, this.CACHE_TTL);
+            
+        }
+        
         return success;
     }
 
     async getAllDirectors(): Promise<Director[]> {
-        // Try to get from cache first
-        const cachedDirectors = await this.cacheService.get<Director[]>('directors:all');
-        if (cachedDirectors) {
-            return cachedDirectors;
-        }
+        const cacheKey = 'directors:all';
+        try {
+            const cachedDirectors = await this.cacheService.get<Director[]>(cacheKey);
+            
+            if (cachedDirectors) {
+                return cachedDirectors;
+            }
 
-        // If not in cache, get from repository and cache it
-        const directors = await this.directorRepository.findAll();
-        await this.cacheService.set('directors:all', directors, this.CACHE_TTL);
-        return directors;
+            const directors = await this.directorRepository.findAll();
+            await this.cacheService.set(cacheKey, directors, this.CACHE_TTL);
+            return directors;
+        } catch (error) {
+            console.error('DirectorService: Error getting all directors:', error);
+            throw error;
+        }
     }
 
     async updateDirector(id: string, updateData: Partial<Director>): Promise<Director | null> {
@@ -74,7 +96,14 @@ export class DirectorService {
         }
 
         const updatedDirector = await this.directorRepository.update(id, updateData);
-        await this.cacheService.delByPattern('director:*'); // Invalidate all director related caches
+        
+        // Invalidate all director related caches
+        await this.cacheService.del('directors:all');
+
+        // Update the cache with fresh data from database
+        const allDirectors = await this.directorRepository.findAll();
+        await this.cacheService.set('directors:all', allDirectors, this.CACHE_TTL);
+        
         return updatedDirector;
     }
 
