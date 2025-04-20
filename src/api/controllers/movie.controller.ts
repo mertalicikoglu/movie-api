@@ -5,20 +5,19 @@ import { MovieService } from '../../application/services/movie.service';
 import { MovieRepository } from '../../infrastructure/repositories/movie.repository'; // Import repository implementation
 import { DirectorRepository } from '../../infrastructure/repositories/director.repository'; // Import Director Repository
 import { NotFoundError } from '../../application/errors'; // Import NotFoundError
-
+import { RedisCacheService } from '../../infrastructure/cache/redis.service';
 
 // Create Repository and Service instances
 // NOTE: In larger projects, these instances can be managed with a dependency injection container
 const movieRepository = new MovieRepository();
 const directorRepository = new DirectorRepository(); // Required for MovieService
-const movieService = new MovieService(movieRepository, directorRepository);
+const cacheService = new RedisCacheService();
+const movieService = new MovieService(movieRepository, directorRepository, cacheService);
 
 export const createMovie = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         // Get movie data from request body
         const movieData = req.body;
-
-        // TODO: Data validation should be implemented (e.g. using Joi or Zod)
 
         // Create movie by calling service in application layer
         const newMovie = await movieService.createMovie(movieData);
@@ -49,8 +48,6 @@ export const updateMovie = async (req: Request, res: Response, next: NextFunctio
     try {
         const movieId = req.params.id;
         const updateData = req.body;
-
-        // TODO: Data validation should be implemented
 
         // Update movie by calling service in application layer
         const updatedMovie = await movieService.updateMovie(movieId, updateData);

@@ -5,19 +5,18 @@ import { DirectorService } from '../../application/services/director.service'; /
 import { DirectorRepository } from '../../infrastructure/repositories/director.repository'; // Import repository implementation
 import { MovieRepository } from '../../infrastructure/repositories/movie.repository'; // Import Movie Repository (required for DirectorService)
 import { NotFoundError } from '../../application/errors'; // Import NotFoundError
-
+import { RedisCacheService } from '../../infrastructure/cache/redis.service';
 
 // Create Repository and Service instances
 // NOTE: In larger projects, these instances can be managed with a dependency injection container
 const directorRepository = new DirectorRepository();
 const movieRepository = new MovieRepository(); // Required for DirectorService
-const directorService = new DirectorService(directorRepository, movieRepository);
+const cacheService = new RedisCacheService();
+const directorService = new DirectorService(directorRepository, movieRepository, cacheService);
 
 export const createDirector = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const directorData = req.body;
-
-        // TODO: Data validation should be implemented
 
         // Create director by calling service in application layer
         const newDirector = await directorService.createDirector(directorData);
