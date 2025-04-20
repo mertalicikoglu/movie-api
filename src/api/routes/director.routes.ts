@@ -16,7 +16,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/directors:
+ * /directors:
  *   post:
  *     summary: Create a new director
  *     tags: [Directors]
@@ -42,7 +42,7 @@ router.post('/', validate(createDirectorSchema), createDirector);
 
 /**
  * @swagger
- * /api/directors:
+ * /directors:
  *   get:
  *     summary: Get all directors
  *     tags: [Directors]
@@ -62,7 +62,7 @@ router.get('/', getAllDirectors);
 
 /**
  * @swagger
- * /api/directors/{id}:
+ * /directors/{id}:
  *   put:
  *     summary: Update a director
  *     tags: [Directors]
@@ -97,7 +97,7 @@ router.put('/:id', validate(updateDirectorSchema), updateDirector);
 
 /**
  * @swagger
- * /api/directors/{id}:
+ * /directors/{id}:
  *   delete:
  *     summary: Delete a director
  *     tags: [Directors]

@@ -15,7 +15,7 @@ const router = Router();
 // Routes for movies
 /**
  * @swagger
- * /api/movies:
+ * /movies:
  *   post:
  *     summary: Create a new movie
  *     tags: [Movies]
@@ -42,7 +42,7 @@ router.post('/', validate(createMovieSchema), createMovie); // POST /api/movies 
 
 /**
  * @swagger
- * /api/movies:
+ * /movies:
  *   get:
  *     summary: Get all movies
  *     tags: [Movies]
@@ -63,7 +63,7 @@ router.get('/', getAllMovies); // GET /api/movies -> Execute getAllMovies functi
 
 /**
  * @swagger
- * /api/movies/{id}:
+ * /movies/{id}:
  *   put:
  *     summary: Update a movie
  *     tags: [Movies]
@@ -99,7 +99,7 @@ router.put('/:id', validate(updateMovieSchema), updateMovie); // PUT /api/movies
 
 /**
  * @swagger
- * /api/movies/{id}:
+ * /movies/{id}:
  *   delete:
  *     summary: Delete a movie
  *     tags: [Movies]
