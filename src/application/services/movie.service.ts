@@ -34,35 +34,69 @@ export class MovieService {
             }
         }
 
+        // Check if movie with same imdbId already exists
+        if (movieData.imdbId) {
+            const existingMovie = await this.movieRepository.findByImdbId(movieData.imdbId);
+            if (existingMovie) {
+                throw new ValidationError(`Movie with imdbId ${movieData.imdbId} already exists.`);
+            }
+        }
+
+        // TODO: More detailed data validation can be done here or in the controller
 
         const newMovie = await this.movieRepository.create(movieData);
-        await this.cacheService.delByPattern('movie:*');
+
+        
+        // Invalidate the movies:all cache
+        await this.cacheService.del('movies:all');
+        
+        // Update the cache with fresh data from database
+        const allMovies = await this.movieRepository.findAll();
+        await this.cacheService.set('movies:all', allMovies, this.CACHE_TTL);
+        
         return newMovie;
     }
 
     async getAllMovies(): Promise<Movie[]> {
-        const cachedMovies = await this.cacheService.get<Movie[]>('movies:all');
-        if (cachedMovies) {
-            return cachedMovies;
+        const cacheKey = 'movies:all';
+        try {
+            const cachedMovies = await this.cacheService.get<Movie[]>(cacheKey);
+            
+            if (cachedMovies) {
+
+                return cachedMovies;
+            }
+
+            const movies = await this.movieRepository.findAll();
+
+            await this.cacheService.set(cacheKey, movies, this.CACHE_TTL);
+            return movies;
+        } catch (error) {
+            console.error('MovieService: Error getting all movies:', error);
+            throw error;
         }
-        const movies = await this.movieRepository.findAll();
-        await this.cacheService.set('movies:all', movies, this.CACHE_TTL);
-        return movies;
     }
 
     async getMovieById(id: string): Promise<Movie | null> {
         const cacheKey = this.getCacheKey(id);
-        const cachedMovie = await this.cacheService.get<Movie>(cacheKey);
-        if (cachedMovie) {
-            return cachedMovie;
+        try {
+            const cachedMovie = await this.cacheService.get<Movie>(cacheKey);
+            if (cachedMovie) {
+                return cachedMovie;
+            }
+
+            const movie = await this.movieRepository.findById(id);
+            // Business Rule: Throw special error if movie is not found
+            if (!movie) {
+                throw new NotFoundError(`Movie with ID ${id} not found.`);
+            }
+            
+            await this.cacheService.set(cacheKey, movie, this.CACHE_TTL);
+            return movie;
+        } catch (error) {
+            console.error(`MovieService: Error getting movie with ID: ${id}`, error);
+            throw error;
         }
-        const movie = await this.movieRepository.findById(id);
-        // Business Rule: Throw special error if movie is not found
-        if (!movie) {
-            throw new NotFoundError(`Movie with ID ${id} not found.`);
-        }
-        await this.cacheService.set(cacheKey, movie, this.CACHE_TTL);
-        return movie; // We can return null so controller can return 404
     }
 
 
@@ -85,7 +119,14 @@ export class MovieService {
         await this.cacheService.del(cacheKey);
 
         const updatedMovie = await this.movieRepository.update(id, updateData);
-        await this.cacheService.delByPattern('movie:*');
+        
+        // Invalidate all movies cache and update with fresh data
+        await this.cacheService.del('movies:all');
+        
+        // Update the cache with fresh data from database
+        const allMovies = await this.movieRepository.findAll();
+        await this.cacheService.set('movies:all', allMovies, this.CACHE_TTL);
+        
         return updatedMovie;
     }
 
@@ -101,7 +142,18 @@ export class MovieService {
         await this.cacheService.del(cacheKey);
 
         const success = await this.movieRepository.delete(id);
-        await this.cacheService.delByPattern('movie:*');
+        
+        // If successful, update the cache with fresh data
+        if (success) {
+            // Invalidate all movies cache
+            await this.cacheService.del('movies:all');
+            
+            // Update the cache with fresh data from database
+            const allMovies = await this.movieRepository.findAll();
+            await this.cacheService.set('movies:all', allMovies, this.CACHE_TTL);
+            
+        }
+        
         return success; // Returns true if deletion was successful
     }
 }
