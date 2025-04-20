@@ -34,21 +34,18 @@ export class DirectorService {
     }
 
     async deleteDirector(id: string): Promise<boolean> {
-        const cacheKey = this.getCacheKey(id);
-        await this.cacheService.del(cacheKey);
-
-        // Business Rule: Check if director to delete exists
+        // Check if director exists
         const existingDirector = await this.directorRepository.findById(id);
         if (!existingDirector) {
             throw new NotFoundError(`Director with ID ${id} not found.`);
         }
 
-        // Business Rule: Check if there are movies associated with this director. If yes, don't allow deletion.
-        const moviesByDirector = await this.movieRepository.findAll(); // Getting all movies and filtering is inefficient, could add findByDirectorId method to repository
-        const relatedMovies = moviesByDirector.filter(movie => movie.directorId === id);
-
-        if (relatedMovies.length > 0) {
-            throw new ConflictError(`Cannot delete director with ID ${id} because ${relatedMovies.length} movies are associated with them.`);
+        // Business Rule: Check if any movies are associated with this director
+        const moviesWithDirector = await this.movieRepository.findByDirectorId(id);
+        
+        if (moviesWithDirector.length > 0) {
+            const movieTitles = moviesWithDirector.map(movie => `"${movie.title}"`).join(', ');
+            throw new ConflictError(`Cannot delete director "${existingDirector.firstName} ${existingDirector.secondName}" because it has ${moviesWithDirector.length} associated movies: ${movieTitles}`);
         }
 
         const success = await this.directorRepository.delete(id);
